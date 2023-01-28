@@ -9,10 +9,10 @@
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>com.gamesapi</groupId>
-	<artifactId>igdb-client</artifactId>
+	<artifactId>web-api</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name>igdb-client</name>
-	<description>Collect data from IGDB</description>
+	<name>web-api</name>
+	<description>Endpoints for web</description>
 	<properties>
 		<java.version>17</java.version>
 	</properties>
@@ -20,10 +20,6 @@
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-web</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-web-services</artifactId>
 		</dependency>
 
 		<dependency>
@@ -36,13 +32,7 @@
 			<artifactId>spring-boot-starter-test</artifactId>
 			<scope>test</scope>
 		</dependency>
-        <dependency>
-            <groupId>com.gamesapi</groupId>
-            <artifactId>database</artifactId>
-            <version>0.0.1-SNAPSHOT</version>
-            <scope>compile</scope>
-        </dependency>
-    </dependencies>
+	</dependencies>
 
 	<build>
 		<plugins>

@@ -22,10 +22,18 @@ public class IGDBClientApplication implements CommandLineRunner {
 
 	@Override
 	public void run(String... args){
-//		GameDto gameDto = client.getGame(1942);
-//		Game game = new Game();
-//		game.setName(gameDto.getName());
-//		database.getGames().save(game);
+		GameDto gameDto = client.getGame(1942);
+		Game game = new Game();
+		game.setSourceId(gameDto.getSourceId());
+		game.setAggregatedRating(gameDto.getAggregatedRating());
+		game.setAggregatedRatingCount(gameDto.getAggregatedRatingCount());
+		game.setFirstReleaseDate(gameDto.getFirstReleaseDate());
+		game.setName(gameDto.getName());
+		game.setRating(gameDto.getRating());
+		game.setRatingCount(gameDto.getRatingCount());
+		game.setStoryline(gameDto.getStoryline());
+		game.setSummary(gameDto.getSummary());
+		database.getGames().save(game);
 	}
 
 }
