@@ -1,9 +1,13 @@
 package com.gamesapi.client;
 
+import com.gamesapi.contract.CompanyDto;
+import com.gamesapi.contract.CoverDto;
 import com.gamesapi.contract.GameDto;
 import com.gamesapi.contract.dictionaries.GenreDto;
 import com.gamesapi.contract.dictionaries.LanguageDto;
 import com.gamesapi.contract.dictionaries.PlatformDto;
+import com.gamesapi.model.Company;
+import com.gamesapi.model.Cover;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
@@ -18,6 +22,7 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.ZoneOffset;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Component
 public class Client implements IClient{
@@ -60,6 +65,28 @@ public class Client implements IClient{
         String body = "fields *; where first_release_date > " + from.toEpochSecond(LocalTime.NOON, ZoneOffset.MIN) + " & first_release_date < " + to.toEpochSecond(LocalTime.NOON, ZoneOffset.MIN) + "; limit 500;";
         HttpEntity<String> request = new HttpEntity<String>(body, headers);
         ResponseEntity<List<GameDto>> response = restTemplate.exchange(url, HttpMethod.POST, request, new ParameterizedTypeReference<List<GameDto>>() {});
+        return response.getBody();
+    }
+
+    public CoverDto getCover(int id){
+        String url = "https://" + baseUrl + "/v" + version + "/covers";
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("Client-ID", clientId);
+        headers.add("Authorization", "Bearer " + accessToken);
+        String body = "fields *; where id=" + id + ";";
+        HttpEntity<String> request = new HttpEntity<String>(body, headers);
+        ResponseEntity<List<CoverDto>> response = restTemplate.exchange(url, HttpMethod.POST, request, new ParameterizedTypeReference<>() {});
+        return response.getBody().get(0);
+    }
+
+    public List<CompanyDto> getCompanies(List<Integer> companyIds){
+        String url = "https://" + baseUrl + "/v" + version + "/covers";
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("Client-ID", clientId);
+        headers.add("Authorization", "Bearer " + accessToken);
+        String body = "fields *; where id=(" + companyIds.stream().map(String::valueOf).collect(Collectors.joining(",")) + ");";
+        HttpEntity<String> request = new HttpEntity<String>(body, headers);
+        ResponseEntity<List<CompanyDto>> response = restTemplate.exchange(url, HttpMethod.POST, request, new ParameterizedTypeReference<>() {});
         return response.getBody();
     }
 

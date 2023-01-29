@@ -1,11 +1,10 @@
 package com.gamesapi.games.updater;
 
 import com.gamesapi.client.IClient;
+import com.gamesapi.contract.CompanyDto;
+import com.gamesapi.contract.CoverDto;
 import com.gamesapi.games.mapping.ICatalogMappers;
-import com.gamesapi.model.Game;
-import com.gamesapi.model.Genre;
-import com.gamesapi.model.Language;
-import com.gamesapi.model.Platform;
+import com.gamesapi.model.*;
 import com.gamesapi.repositories.ICatalogData;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -24,47 +23,79 @@ public class GamesUpdater implements IUpdateGames {
     @Override
     public void updateByDateRange(LocalDate from, LocalDate to) {
         updateDictionaries();
-        System.out.println("updated dictionaries");
         var gameDtos = client.getGamesBetweenDates(from, to);
+        System.out.println("updating games...");
 
-        List<Game> games = new ArrayList<>();
         for(var gameDto : gameDtos){
             var gameOptional = data.getGames().findBySourceId(gameDto.getSourceId());
             if(gameOptional.isPresent()){
-                games.add(entityMapper.forGame().mapDto(gameDto, gameOptional.get()));
+                // This portion should update existing game entities in a database.
+                // I might skip it to avoid complexity and to not slow things down.
             } else {
-                games.add(entityMapper.forGame().mapDto(gameDto));
+                Game game = entityMapper.forGame().mapDto(gameDto);
+
+                // Add cover
+                if(gameDto.getCover() != null){
+                    Cover cover = entityMapper.forCover().mapDto(client.getCover(gameDto.getCover()));
+                    game.setCover(cover);
+                    cover.setGame(game);
+                }
+
+                // Add company
+                if(gameDto.getCompanies() != null){
+                    List<CompanyDto> companyDtos = client.getCompanies(gameDto.getCompanies());
+                    List<Company> companies = new ArrayList<>();
+                    for(CompanyDto companyDto : companyDtos){
+                        var companyOptional = data.getCompanies().findBySourceId(companyDto.getSourceId());
+                        if(companyOptional.isPresent()){
+                            companies.add(companyOptional.get());
+                        } else{
+                            Company company = entityMapper.forCompany().mapDto(companyDto);
+                            companies.add(company);
+                        }
+                    }
+                    game.setCompanies(companies);
+                }
+
+                // Add genres
+                if(gameDto.getGenres() != null) {
+                    List<Genre> genres = new ArrayList<>();
+                    for (var genreId : gameDto.getGenres()) {
+                        Genre genre = data.getGenres().findBySourceId(genreId).get();
+                        genres.add(genre);
+                    }
+                    game.setGenres(genres);
+                }
+
+                // Add languages
+                if(gameDto.getLanguages() != null) {
+                    List<Language> languages = new ArrayList<>();
+                    for (var languageId : gameDto.getLanguages()) {
+                        var language = data.getLanguages().findBySourceId(languageId).get();
+                        languages.add(language);
+                    }
+                    game.setLanguages(languages);
+                }
+
+                // Add platforms
+                if(gameDto.getPlatforms() != null) {
+                    List<Platform> platforms = new ArrayList<>();
+                    for (var platformId : gameDto.getPlatforms()) {
+                        var platform = data.getPlatforms().findBySourceId(platformId).get();
+                        platforms.add(platform);
+                    }
+                    game.setPlatforms(platforms);
+                }
+
+                data.getGames().save(game);
             }
-
-            Game game = games.get(games.size() - 1);
-
-            // Update game genres
-            List<Genre> genres = new ArrayList<>();
-            for(var genreId : gameDto.getGenres()){
-                var genre = data.getGenres().findBySourceId(genreId).get();
-                genre.getGames().add(game);
-                genres.add(genre);
-            }
-            game.setGenres(genres);
-
-            // Update game languages
-            List<Language> languages = new ArrayList<>();
-            for(var languageId : gameDto.getLanguages()){
-                var language = data.getLanguages().findBySourceId(languageId).get();
-                language.getGames().add(game);
-                languages.add(language);
-            }
-            game.setLanguages(languages);
-
-            // Update
-
-            // This updating doesn't make sense, I should get list from game and update it, so I don't just ignore all those existing entities.
         }
-        data.getGames().saveAll(games);
     }
 
     @Override
     public void updateDictionaries(){
+        System.out.println("updating dictionaries...");
+
         var genreDtos = client.getGenres();
         var languageDtos = client.getLanguages();
         var platformDtos = client.getPlatforms();
