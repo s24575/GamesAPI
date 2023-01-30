@@ -1,13 +1,16 @@
 import axios from "axios";
-import React, { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import React, { useEffect, useState } from "react";
+import { Link, useNavigate, useParams } from "react-router-dom";
 
 export default function EditGame() {
   let navigate = useNavigate();
+
+  const { id } = useParams();
+
   const [game, setGame] = useState({
     name: "",
     aggregated_rating: 0,
-    first_release_date: 0,
+    first_release_date: "",
   });
 
   const { name, aggregated_rating, first_release_date } = game;
@@ -16,12 +19,24 @@ export default function EditGame() {
     setGame({ ...game, [e.target.name]: e.target.value });
   };
 
+  useEffect(() => {
+    loadGame();
+  }, []);
+
   const onSubmit = async (e) => {
     e.preventDefault();
     game.first_release_date = Date.parse(first_release_date) / 1000;
-    console.log(game);
-    await axios.put("http://localhost:8080/api/v1/games", game);
+    await axios.put(`http://localhost:8080/api/v1/games/${id}`, game);
     navigate("/");
+  };
+
+  const loadGame = async () => {
+    const result = await axios.get(`http://localhost:8080/api/v1/games/${id}`);
+    const { data } = result;
+    data.first_release_date = new Date(data.first_release_date * 1000)
+      .toISOString()
+      .split("T")[0];
+    setGame(result.data);
   };
 
   return (
@@ -41,6 +56,7 @@ export default function EditGame() {
                 name="name"
                 value={name}
                 onChange={(e) => onInputChange(e)}
+                required
               />
             </div>
             <div className="mb-3">
@@ -67,10 +83,11 @@ export default function EditGame() {
                 name="first_release_date"
                 value={first_release_date}
                 onChange={(e) => onInputChange(e)}
+                required
               />
             </div>
             <button type="submit" className="btn btn-outline-primary">
-              Add
+              Update
             </button>
             <Link className="btn btn-outline-danger mx-2" to="/">
               Cancel

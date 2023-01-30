@@ -5,6 +5,8 @@ import { Link } from "react-router-dom";
 export default function Home() {
   const [games, setGames] = useState([]);
 
+  // const { id } = useParams;
+
   useEffect(() => {
     loadGames();
   }, []);
@@ -12,6 +14,11 @@ export default function Home() {
   const loadGames = async () => {
     const result = await axios.get("http://localhost:8080/api/v1/games");
     setGames(result.data);
+  };
+
+  const deleteGame = async (id) => {
+    await axios.delete(`http://localhost:8080/api/v1/games/${id}`);
+    loadGames();
   };
 
   return (
@@ -41,14 +48,24 @@ export default function Home() {
                   <td>{game.aggregated_rating}%</td>
                   <td>{date}</td>
                   <td>
-                    <button className="btn btn-primary mx-2">View</button>
+                    <Link
+                      className="btn btn-primary mx-2"
+                      to={`/viewgame/${game.id}`}
+                    >
+                      View
+                    </Link>
                     <Link
                       className="btn btn-outline-primary mx-2"
                       to={`/editgame/${game.id}`}
                     >
                       Edit
                     </Link>
-                    <button className="btn btn-danger mx-2">Delete</button>
+                    <button
+                      className="btn btn-danger mx-2"
+                      onClick={() => deleteGame(game.id)}
+                    >
+                      Delete
+                    </button>
                   </td>
                 </tr>
               );

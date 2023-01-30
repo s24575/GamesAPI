@@ -4,10 +4,11 @@ import { Link, useNavigate } from "react-router-dom";
 
 export default function AddGame() {
   let navigate = useNavigate();
+
   const [game, setGame] = useState({
     name: "",
     aggregated_rating: 0,
-    first_release_date: 0,
+    first_release_date: "",
   });
 
   const { name, aggregated_rating, first_release_date } = game;
@@ -19,7 +20,6 @@ export default function AddGame() {
   const onSubmit = async (e) => {
     e.preventDefault();
     game.first_release_date = Date.parse(first_release_date) / 1000;
-    console.log(game);
     await axios.post("http://localhost:8080/api/v1/games", game);
     navigate("/");
   };
@@ -41,6 +41,7 @@ export default function AddGame() {
                 name="name"
                 value={name}
                 onChange={(e) => onInputChange(e)}
+                required
               />
             </div>
             <div className="mb-3">
@@ -67,6 +68,7 @@ export default function AddGame() {
                 name="first_release_date"
                 value={first_release_date}
                 onChange={(e) => onInputChange(e)}
+                required
               />
             </div>
             <button type="submit" className="btn btn-outline-primary">
