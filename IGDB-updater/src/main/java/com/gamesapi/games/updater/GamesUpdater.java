@@ -2,7 +2,7 @@ package com.gamesapi.games.updater;
 
 import com.gamesapi.client.IClient;
 import com.gamesapi.contract.CompanyDto;
-import com.gamesapi.contract.CoverDto;
+import com.gamesapi.contract.LanguageSupportDto;
 import com.gamesapi.games.mapping.ICatalogMappers;
 import com.gamesapi.model.*;
 import com.gamesapi.repositories.ICatalogData;
@@ -43,7 +43,7 @@ public class GamesUpdater implements IUpdateGames {
 
                 // Add company
                 if(gameDto.getCompanies() != null){
-                    List<CompanyDto> companyDtos = client.getCompanies(gameDto.getCompanies());
+                    List<CompanyDto> companyDtos = client.getInvolvedCompanies(gameDto.getCompanies());
                     List<Company> companies = new ArrayList<>();
                     for(CompanyDto companyDto : companyDtos){
                         var companyOptional = data.getCompanies().findBySourceId(companyDto.getSourceId());
@@ -69,9 +69,10 @@ public class GamesUpdater implements IUpdateGames {
 
                 // Add languages
                 if(gameDto.getLanguages() != null) {
+                    List<LanguageSupportDto> languageSupportDtos = client.getLanguageSupport(gameDto.getLanguages());
                     List<Language> languages = new ArrayList<>();
-                    for (var languageId : gameDto.getLanguages()) {
-                        var language = data.getLanguages().findBySourceId(languageId).get();
+                    for (var languageSupportDto : languageSupportDtos) {
+                        var language = data.getLanguages().findBySourceId(languageSupportDto.getLanguageId()).get();
                         languages.add(language);
                     }
                     game.setLanguages(languages);
